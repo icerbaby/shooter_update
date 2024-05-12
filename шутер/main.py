@@ -12,6 +12,10 @@ kills, lost,  = 0, 0,
 
 in_menu = True
 
+in_stopmenu = False
+
+osoboye_menu = False
+
 boss_killed = False
 
 window = display.set_mode((window_width, window_height))
@@ -40,9 +44,11 @@ class Menu:
         self.difficulty1_button = Rect(200, window_height /2, 180, 50)
         self.difficulty2_button = Rect(500, window_height /2, 190, 50)
         self.difficulty3_button = Rect(800, window_height /2, 180, 50)
-        self.difficulty3_text = self.font.render("Hard", True, (255, 255, 255))
-        self.difficulty2_text = self.font.render("Medium", True, (255, 255, 255))
-        self.difficulty1_text = self.font.render("Easy", True, (255, 255, 255))
+        self.difficulty3_text = self.font.render("Сложная", True, (255, 255, 255))
+        self.difficulty2_text = self.font.render("Средняя", True, (255, 255, 255))
+        self.difficulty1_text = self.font.render("Легкая", True, (255, 255, 255))
+
+        self.simple_text = self.font.render("Выбери сложность для начала игры", True, (255, 255, 255))
     
     def draw_buttons(self):
         window.fill((0, 0, 0))  
@@ -52,16 +58,48 @@ class Menu:
         window.blit(self.difficulty1_text, (self.difficulty1_button.x + 50, self.difficulty1_button.y + 10))  
         window.blit(self.difficulty2_text, (self.difficulty2_button.x + 55, self.difficulty2_button.y + 10))
         window.blit(self.difficulty3_text, (self.difficulty3_button.x + 55, self.difficulty3_button.y + 10))
+        window.blit(self.simple_text, (window_width - 750, 120))
 
     def handle_event(self, event):
         if event.type == MOUSEBUTTONDOWN:
             if self.difficulty1_button.collidepoint(mouse.get_pos()):  
-                return "Easy"  
+                return "Легкая"  
             elif self.difficulty2_button.collidepoint(mouse.get_pos()):  
-                return "Medium"
+                return "Средняя"
             elif self.difficulty3_button.collidepoint(mouse.get_pos()):
-                return "Hard"    
+                return "Сложная"    
         return None
+    
+    
+    
+
+class StopMenu:
+    def __init__(self):
+        window.fill((200,200,200))
+        self.font = font.Font(None, 36)
+        self.continue_button = Rect(200, window_height /2, 180, 50)
+        self.exit_button = Rect(500, window_height /2, 190, 50)
+        self.continue_text = self.font.render("Продолжить", True, (255, 255, 255))
+        self.exit_text = self.font.render("Выход", True, (255, 255, 255))
+
+
+    def draw_buttons2(self):
+        window.fill(0,0,0)
+        draw.rect(window, (255, 255, 255), self.continue_button)  
+        draw.rect(window, (255, 255, 255), self.exit_button)
+        window.blit(self.exit_text, (self.continue_button.x + 50, self.continue_button.y + 10))  
+        window.blit(self.continue_text, (self.exit_button.x + 55, self.exit_button.y + 10))
+
+    def actions(self, event):
+        if event.type == MOUSEBUTTONDOWN:
+            if self.continue_button.collidepoint(mouse.get_pos()):  
+                return "Продолжить"  
+            elif self.exit_button.collidepoint(mouse.get_pos()):  
+                return "Выход"   
+        return None
+
+        
+
 
 
 class GameSprite(sprite.Sprite):
@@ -210,6 +248,7 @@ class Pulya(GameSprite):
 bg = GameSprite(img = "bg.jpg", pos=(0, 0), size=(window_width, window_height), speed = 0)
 player = Player(img = "igrok.png", pos=(5, window_height - 64), size=(96, 64), speed = 5)
 menu = Menu()
+stopmenu= StopMenu()
 
 
 enemys_group = sprite.Group()
@@ -230,19 +269,30 @@ while in_menu:
     for ev in event.get():
         if ev.type == QUIT:
             in_menu = False
+            game_run = False
     menu.draw_buttons()
     display.update()
 
+
+
     for ev in event.get():
         action = menu.handle_event(ev)
-        if action == "Easy" and in_menu:
+        if action == "Сложная" and in_menu:
             in_menu = False
-        elif action == "Medium" and in_menu:
+        elif action == "Средняя" and in_menu:
             in_menu = False
-        elif action == "Hard" and in_menu:
+        elif action == "Легкая" and in_menu:
             in_menu = False
 
-
+while in_stopmenu:
+    music.stop()
+    for ev in event.get():
+        if ev.type == QUIT:
+            in_stopmenu = False
+            game_run = False
+    
+    stopmenu.draw_buttons2()
+    display.update()
 
 
 
@@ -250,8 +300,14 @@ while game_run:
     for ev in event.get():
         if ev.type == QUIT:
             game_run = False
+        keys = key.get_pressed()
+        if ev.type == KEYDOWN:
+            if ev.key == K_ESCAPE:
+                
+                in_menu = not in_menu
+
         
-    if not in_menu and action == "Easy":
+    if not in_menu and action == "Легкая":
         bg.reset()
         player.reset()
         bosses_group.draw(window)
@@ -319,7 +375,7 @@ while game_run:
             gryppa_pylb.update()   
             
                 
-    elif not in_menu and action == "Medium":
+    elif not in_menu and action == "Средняя":
         bg.reset()
         player.reset()
         bosses_group.draw(window)
@@ -385,7 +441,7 @@ while game_run:
             bosses_group.update()
             player.update()
             gryppa_pylb.update()
-    elif not in_menu and action == "Hard":
+    elif not in_menu and action == "Сложная":
         bg.reset()
         player.reset()
         bosses_group.draw(window)
